@@ -1,7 +1,9 @@
 package ru.practicum.shareit.booking.dto;
 
-/**
- * TODO Sprint add-bookings.
- */
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class BookingDto {
 }
