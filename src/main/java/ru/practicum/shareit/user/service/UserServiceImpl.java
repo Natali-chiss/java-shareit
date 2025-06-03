@@ -2,6 +2,8 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.ConditionsNotMetException;
+import ru.practicum.shareit.exception.DuplicatedDataException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -19,12 +21,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto saveUser(User user) {
+        validateEmail(user.getEmail());
         User savedUser = userRepository.saveUser(user);
         return UserMapper.toUserDto(savedUser);
     }
 
     @Override
     public UserDto updateUser(Long userId, User user) {
+        User userFromRepository = userRepository.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUND, userId)));
+        if (user.getEmail() != null && !userFromRepository.getEmail().equals(user.getEmail())) {
+            validateEmail(user.getEmail());
+        }
         User updatedUser = userRepository.updateUser(userId, user);
         return UserMapper.toUserDto(updatedUser);
     }
@@ -48,5 +56,22 @@ public class UserServiceImpl implements UserService {
         userRepository.getUserById(id)
                 .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUND, id)));
         userRepository.deleteUser(id);
+    }
+
+    private void validateEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new ConditionsNotMetException("Email должен быть указан");
+        }
+        if (!email.contains("@")) {
+            throw new ConditionsNotMetException("Email должен содержать символ @");
+        }
+        if (isEmailUsed(email)) {
+            throw new DuplicatedDataException("Этот email уже используется");
+        }
+    }
+
+    private boolean isEmailUsed(String email) {
+        return userRepository.getAllUsers().stream()
+                .anyMatch(user -> user.getEmail().equals(email));
     }
 }

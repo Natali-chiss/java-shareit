@@ -8,13 +8,13 @@ import java.util.Optional;
 public interface ItemRepository {
     Item saveItem(Item item, Long ownerId);
 
-    Item updateItem(Long itemId, Item item, Long userId);
+    Item updateItem(Long itemId, Item item);
 
     Optional<Item> getItemById(Long itemId);
 
     List<Item> getAllItemsOfOwner(Long ownerId);
 
-    void deleteItemById(Long id, Long userId);
+    void deleteItemById(Long id);
 
     List<Item> searchByText(String text);
 }
